@@ -6,6 +6,7 @@ use trylife\ipAccess\models\IpAccess;
 use Yii;
 use yii\base\Behavior;
 use yii\base\Controller;
+use yii\web\HttpException;
 
 /**
  * Class IpWhiteListBehavior
@@ -19,6 +20,9 @@ class IpWhiteListBehavior extends Behavior
         'tools/ip-access/ping',
         'wechat-server/index',
     ];
+	
+	public $errorMessage = 'You do not have access rights!';
+	public $errorCode = 403;
 
     public function events()
     {
@@ -32,9 +36,7 @@ class IpWhiteListBehavior extends Behavior
         $route = Yii::$app->requestedAction ? Yii::$app->requestedAction->getUniqueId() : Yii::$app->requestedRoute;
         $ip = Yii::$app->getRequest()->getUserIP();
         if (!IpAccess::hasIpAccess() && !in_array($ip, $this->allowIps) && !in_array($route, $this->allowRoutes)) {
-            Yii::$app->response->statusCode = 403;
-            echo '403: You do not have access rights!';
-            exit();
+            throw new HttpException($this->errorMessage, $this->errorCode);
         }
     }
 }
